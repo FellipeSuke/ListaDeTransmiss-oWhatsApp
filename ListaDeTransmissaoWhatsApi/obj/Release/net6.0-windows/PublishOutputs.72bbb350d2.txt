@@ -1,0 +1,11 @@
+C:\Dev\Projeto\Atualizado\VS\ListaDeTransmissaoWhatsApi\ListaDeTransmissaoWhatsApi\bin\Release\net6.0-windows\publish\ListaDeTransmissaoWhatsApi.exe
+C:\Dev\Projeto\Atualizado\VS\ListaDeTransmissaoWhatsApi\ListaDeTransmissaoWhatsApi\bin\Release\net6.0-windows\publish\ListaDeTransmissaoWhatsApi.dll
+C:\Dev\Projeto\Atualizado\VS\ListaDeTransmissaoWhatsApi\ListaDeTransmissaoWhatsApi\bin\Release\net6.0-windows\publish\ListaDeTransmissaoWhatsApi.deps.json
+C:\Dev\Projeto\Atualizado\VS\ListaDeTransmissaoWhatsApi\ListaDeTransmissaoWhatsApi\bin\Release\net6.0-windows\publish\ListaDeTransmissaoWhatsApi.runtimeconfig.json
+C:\Dev\Projeto\Atualizado\VS\ListaDeTransmissaoWhatsApi\ListaDeTransmissaoWhatsApi\bin\Release\net6.0-windows\publish\ListaDeTransmissaoWhatsApi.dll.config
+C:\Dev\Projeto\Atualizado\VS\ListaDeTransmissaoWhatsApi\ListaDeTransmissaoWhatsApi\bin\Release\net6.0-windows\publish\ListaDeTransmissaoWhatsApi.pdb
+C:\Dev\Projeto\Atualizado\VS\ListaDeTransmissaoWhatsApi\ListaDeTransmissaoWhatsApi\bin\Release\net6.0-windows\publish\Newtonsoft.Json.dll
+C:\Dev\Projeto\Atualizado\VS\ListaDeTransmissaoWhatsApi\ListaDeTransmissaoWhatsApi\bin\Release\net6.0-windows\publish\RestSharp.dll
+C:\Dev\Projeto\Atualizado\VS\ListaDeTransmissaoWhatsApi\ListaDeTransmissaoWhatsApi\bin\Release\net6.0-windows\publish\System.Text.Encodings.Web.dll
+C:\Dev\Projeto\Atualizado\VS\ListaDeTransmissaoWhatsApi\ListaDeTransmissaoWhatsApi\bin\Release\net6.0-windows\publish\System.Text.Json.dll
+C:\Dev\Projeto\Atualizado\VS\ListaDeTransmissaoWhatsApi\ListaDeTransmissaoWhatsApi\bin\Release\net6.0-windows\publish\runtimes\browser\lib\net6.0\System.Text.Encodings.Web.dll

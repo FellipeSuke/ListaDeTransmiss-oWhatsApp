@@ -7,24 +7,21 @@ namespace ListaDeTransmissaoWhatsApi
 {
     public partial class Form1 : Form
     {
+        //Variaveis Ambiente
         public string sessionId;
         //public string host = "https://whatsapi.up.railway.app/";
         public string host = "http://apisuke.ddns.net:3000/";
         //public string host = "http://191.220.2.201:3000";
+        public string keyName = "x-api-key";
+        public string keyValue = "ApiWhatsApp";
+
         public Form1()
         {
             InitializeComponent();
             sessionId = tbSessionId.Text;
-            if (PingSystem().ToString() == "pong")
-            {
-                PingSystem();
-                cbConnectar.Visible = false;
-            }
-            else
-            {
-                cbConnectar.Visible = true;
-                PingSystem();
-            }
+            PingSystem();
+            tbSessionId.Text = Properties.Settings.Default.sessao;
+            PreencherCheckListBoxComArquivos();
 
 
         }
@@ -58,7 +55,6 @@ namespace ListaDeTransmissaoWhatsApi
 
         }
 
-
         private async void cbIniciarsessao_Click(object sender, EventArgs e)
         {
             Processando();
@@ -78,7 +74,6 @@ namespace ListaDeTransmissaoWhatsApi
 
         }
 
-
         private async void cbStats_Click(object sender, EventArgs e)
         {
             Processando();
@@ -86,7 +81,6 @@ namespace ListaDeTransmissaoWhatsApi
             PrintMessage(response, $"Sessão {sessionId} ");
 
         }
-
 
         private async Task ShowQRCodeAsync(RestResponse cache)
         {
@@ -153,7 +147,6 @@ namespace ListaDeTransmissaoWhatsApi
 
         }
 
-
         private async Task<RestResponse> RequestRestGetAsync(string caminhoSession, string optional = "", string contentType = "application/json")
         {
             var options = new RestClientOptions(host)
@@ -163,10 +156,43 @@ namespace ListaDeTransmissaoWhatsApi
             };
             var client = new RestClient(options);
             var request = new RestRequest(caminhoSession + sessionId + optional, Method.Get);
+            request.AddHeader(keyName, keyValue);
             request.AddHeader("Content-Type", contentType);
             return await client.ExecuteAsync(request);
         }
 
+        private async Task PostMessageWhatsapp(string ItensMarcados, string host)
+        {
+            var options = new RestClientOptions(host)
+            {
+                MaxTimeout = -1,
+            };
+            var client = new RestClient(options);
+            var request = new RestRequest($"/client/sendMessage/{sessionId}", Method.Post);
+            request.AddHeader(keyName, keyValue);
+            request.AddHeader("Content-Type", "application/json");
+
+            var usuarioTarget = DadosDoEnvioUsuario(ItensMarcados);
+
+            string ReplaceDeVariaveisMsg = tbCampoMessage.Text.Replace("@PrimeiroNomeContato@", usuarioTarget.PrimeiroNome.ToString()).Replace("@NomeCompletoDoContato@", usuarioTarget.NomeCompleto.ToString()).Replace("@NumeroDoContato@", usuarioTarget.Numero.ToString());
+
+            string textoSemQuebrasDeLinha = ReplaceDeVariaveisMsg.Replace("\n", @"\n").Replace("\r", @"\r");
+
+            var body = @"{
+" + "\n" +
+  @$"  ""chatId"": ""{usuarioTarget.Numero}"",
+" + "\n" +
+  @"  ""contentType"": ""string"",
+" + "\n" +
+  @$"  ""content"": ""{textoSemQuebrasDeLinha}""
+" + "\n" +
+  @"}";
+
+            request.AddStringBody(body, DataFormat.Json);
+            RestResponse response = await client.ExecuteAsync(request);
+            labelResponse.Text = response.ResponseStatus.ToString();
+
+        }
 
         private StartSession DesserializeResponse(RestResponse response)
         {
@@ -255,15 +281,23 @@ namespace ListaDeTransmissaoWhatsApi
 
         private void cbAddContato_Click(object sender, EventArgs e)
         {
-            string contatoWhatsapp = FormatarNumeroWhatsApp(tbNumeroContato.Text);
-            clbContatos.Items.Add((contatoWhatsapp + "; " + tbNomeContato.Text), true);
-            foreach (var item in clbContatos.Items)
+            if (tbNomeContato.Text != "" && tbNumeroContato.Text != "")
+            {
+                string contatoWhatsapp = FormatarNumeroWhatsApp(tbNumeroContato.Text);
+                clbContatos.Items.Add((contatoWhatsapp + "; " + tbNomeContato.Text), true);
+                foreach (var item in clbContatos.Items)
+                {
+                    tbNomeContato.Clear();
+                    tbNumeroContato.Clear();
+                    tbNumeroContato.Focus();
+                }
+            }
+            else
+            {
+                MessageBox.Show($"Campos Obrigatórios não Preenchidos", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
 
-                tbNomeContato.Clear();
-            tbNumeroContato.Clear();
-            tbNumeroContato.Focus();
-
-        }
+        } //Atenção aqui, falta campo obrigatórios
 
         static string FormatarNumeroWhatsApp(string telefone)
         {
@@ -295,35 +329,6 @@ namespace ListaDeTransmissaoWhatsApi
 
 
 
-
-        }
-
-        private async Task PostMessageWhatsapp(string ItensMarcados, string host)
-        {
-            var options = new RestClientOptions(host)
-            {
-                MaxTimeout = -1,
-            };
-            var client = new RestClient(options);
-            var request = new RestRequest($"/client/sendMessage/{sessionId}", Method.Post);
-            request.AddHeader("Content-Type", "application/json");
-
-            var usuarioTarget = DadosDoEnvioUsuario(ItensMarcados);
-            string textoSemQuebrasDeLinha = tbCampoMessage.Text.Replace("\n", @"\n").Replace("\r", @"\r");
-
-            var body = @"{
-" + "\n" +
-  @$"  ""chatId"": ""{usuarioTarget.Numero}"",
-" + "\n" +
-  @"  ""contentType"": ""string"",
-" + "\n" +
-  @$"  ""content"": ""{textoSemQuebrasDeLinha}""
-" + "\n" +
-  @"}";
-
-            request.AddStringBody(body, DataFormat.Json);
-            RestResponse response = await client.ExecuteAsync(request);
-            labelResponse.Text = response.ResponseStatus.ToString();
 
         }
 
@@ -374,6 +379,7 @@ namespace ListaDeTransmissaoWhatsApi
             {
                 LabelServidor.Text = $"Servidor: Conectado";
                 LabelServidor.BackColor = Color.YellowGreen;
+                cbConnectar.Visible = false;
                 return responseData.Message;
 
             }
@@ -383,12 +389,14 @@ namespace ListaDeTransmissaoWhatsApi
                 {
                     LabelServidor.Text = $"Falha{Environment.NewLine}{responseData.Error}";
                     LabelServidor.BackColor = Color.IndianRed;
+                    cbConnectar.Visible = true;
                     return responseData.Error;
                 }
                 else
                 {
                     LabelServidor.Text = $"Falha{Environment.NewLine}{responseData.Message}";
                     LabelServidor.BackColor = Color.IndianRed;
+                    cbConnectar.Visible = true;
                     return responseData.Message;
                 }
 
@@ -400,5 +408,202 @@ namespace ListaDeTransmissaoWhatsApi
             }
         }
 
+        private void cbPrimeiroNome_Click(object sender, EventArgs e)
+        {
+            VariaveisDeTexto(" @PrimeiroNomeContato@ ");
+        }
+
+        private void cbNomeCompleto_Click(object sender, EventArgs e)
+        {
+            VariaveisDeTexto(" @NomeCompletoDoContato@ ");
+        }
+
+        private void VariaveisDeTexto(string variavelTexto)
+        {
+            int posicaoCursor = tbCampoMessage.SelectionStart;
+
+            // Insere o texto na posição do cursor
+            tbCampoMessage.Text = tbCampoMessage.Text.Insert(posicaoCursor, variavelTexto);
+
+            // Move o cursor para o final do texto inserido
+            tbCampoMessage.SelectionStart = posicaoCursor + variavelTexto.Length;
+            tbCampoMessage.SelectionLength = 0; // Desmarca o texto selecionado, se houver
+            tbCampoMessage.Focus();
+        }
+
+        private void cbSelectAll_Click(object sender, EventArgs e) // EM CONSTRUÇÂO
+        {
+            if (clbContatos.GetItemChecked(0))
+            {
+                for (int i = 0; i < clbContatos.Items.Count; i++)
+                {
+                    clbContatos.SetItemChecked(i, false);
+                }
+
+            }
+            else
+            {
+                for (int i = 0; i < clbContatos.Items.Count; i++)
+                {
+                    clbContatos.SetItemChecked(i, true);
+                }
+            }
+
+        }
+
+        private void cbExcluir_Click(object sender, EventArgs e)
+        {
+            int numeroDeContatosMarcados = clbContatos.CheckedItems.Count;
+            DialogResult result = MessageBox.Show($"Tem certeza que deseja excluir {numeroDeContatosMarcados} contatos selecionado(s)?", "Confirmação", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+
+                List<int> indicesParaRemover = new List<int>();
+
+                // Itera pelos itens selecionados
+                foreach (int indice in clbContatos.CheckedIndices)
+                {
+                    indicesParaRemover.Add(indice); // Adiciona o índice à lista de índices para remover
+                }
+
+                // Itera pelos índices para remover e remove os itens correspondentes do CheckedListBox
+                for (int i = indicesParaRemover.Count - 1; i >= 0; i--)
+                {
+                    clbContatos.Items.RemoveAt(indicesParaRemover[i]);
+                }
+            }
+        }
+
+        private void cbSalvarGrupo_Click(object sender, EventArgs e)
+        {
+            string nomeArquivo = tbNomeDoArquivoDeGrupo.Text; // Obtém o nome do arquivo do TextBox
+
+            // Verifica se o nome do arquivo não está vazio
+            if (!string.IsNullOrWhiteSpace(nomeArquivo))
+            {
+                // Diretório onde os arquivos serão salvos
+                string diretorioGrupos = Path.Combine(Application.StartupPath, "Grupos");
+
+                // Verifica se o diretório Grupos não existe e cria se necessário
+                if (!Directory.Exists(diretorioGrupos))
+                {
+                    Directory.CreateDirectory(diretorioGrupos);
+                }
+
+                string caminhoCompleto = Path.Combine(diretorioGrupos, nomeArquivo + ".txt"); // Prepara o caminho completo do arquivo
+
+                // Salva os itens do CheckedListBox no arquivo de texto
+                SalvarItensCheckListBox(caminhoCompleto);
+                MessageBox.Show("Itens salvos com sucesso!");
+            }
+            else
+            {
+                MessageBox.Show("Por favor, insira um nome de arquivo válido.");
+            }
+        }
+
+        private void SalvarItensCheckListBox(string caminhoArquivo)
+        {
+            // Escreve os itens do CheckedListBox no arquivo de texto
+            using (StreamWriter writer = new StreamWriter(caminhoArquivo))
+            {
+                foreach (var item in clbContatos.CheckedItems)
+                {
+                    writer.WriteLine(item.ToString());
+                }
+            }
+            PreencherCheckListBoxComArquivos();
+        }
+
+        private void PreencherCheckListBoxComArquivos()
+        {
+            clbGrupoDeContado.Items.Clear();
+            // Especifique o diretório onde estão os arquivos
+            string diretorio = Path.Combine(Application.StartupPath, "Grupos");
+
+            // Verifica se o diretório existe
+            if (Directory.Exists(diretorio))
+            {
+                // Obtem uma lista dos arquivos no diretório
+                string[] arquivos = Directory.GetFiles(diretorio);
+
+                // Adiciona cada nome de arquivo ao CheckListBox
+                foreach (string arquivo in arquivos)
+                {
+                    // Obtém apenas o nome do arquivo sem o caminho completo e sem a extensão
+                    string nomeArquivo = Path.GetFileNameWithoutExtension(arquivo);
+
+                    // Adiciona o nome do arquivo ao CheckListBox
+                    clbGrupoDeContado.Items.Add(nomeArquivo);
+                }
+            }
+            else
+            {
+                // Se o diretório não existe, exibe uma mensagem de erro
+                //MessageBox.Show("O diretório especificado não existe.");
+            }
+        }
+
+        private void cbImportContatosDeGrupo_Click(object sender, EventArgs e)
+        {
+
+            foreach (string nomeArquivo in clbGrupoDeContado.CheckedItems)
+            {
+                string caminhoArquivo = Path.Combine(Application.StartupPath, "Grupos", nomeArquivo + ".txt");
+
+                if (File.Exists(caminhoArquivo))
+                {
+                    string[] linhas = File.ReadAllLines(caminhoArquivo);
+                    foreach (string linha in linhas)
+                    {
+                        clbContatos.Items.Add(linha, true);
+                    }
+                }
+                else
+                {
+                    MessageBox.Show($"Arquivo '{nomeArquivo}' não encontrado.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void cbExcluirGrupoSelect_Click(object sender, EventArgs e)
+        {
+
+
+            DialogResult result = MessageBox.Show("Tem certeza que deseja excluir o(s) Grupo(s) selecionado(s)?", "Confirmação", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                foreach (string nomeArquivo in clbGrupoDeContado.CheckedItems)
+                {
+                    string caminhoArquivo = Path.Combine(Application.StartupPath, "Grupos", nomeArquivo + ".txt"); Path.Combine(Application.StartupPath, "Grupos", nomeArquivo + ".txt");
+
+                    if (File.Exists(caminhoArquivo))
+                    {
+                        try
+                        {
+                            File.Delete(caminhoArquivo);
+                            MessageBox.Show($"Arquivo '{nomeArquivo}' excluído com sucesso.", "Sucesso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show($"Erro ao excluir arquivo '{nomeArquivo}': {ex.Message}", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show($"Arquivo '{nomeArquivo}' não encontrado.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                PreencherCheckListBoxComArquivos();
+            }
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Properties.Settings.Default.sessao = tbSessionId.Text;
+            Properties.Settings.Default.Save();
+        }
     }
 }
