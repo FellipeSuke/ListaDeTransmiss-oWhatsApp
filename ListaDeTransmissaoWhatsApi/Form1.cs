@@ -13,14 +13,18 @@ namespace ListaDeTransmissaoWhatsApi
         public string host = "http://apisuke.ddns.net:3000/";
         //public string host = "http://191.220.2.201:3000";
         public string keyName = "x-api-key";
-        public string keyValue = "ApiWhatsApp";
+        public string keyValue;
+        DadosImagemAnexo imagemEmAnexo = new();
 
         public Form1()
         {
             InitializeComponent();
-            sessionId = tbSessionId.Text;
-            PingSystem();
             tbSessionId.Text = Properties.Settings.Default.sessao;
+            tbApiKey.Text = Properties.Settings.Default.apiKey;
+            sessionId = tbSessionId.Text;
+            keyValue = tbApiKey.Text;
+            PingSystem();
+
             PreencherCheckListBoxComArquivos();
 
 
@@ -61,7 +65,7 @@ namespace ListaDeTransmissaoWhatsApi
             RestResponse response = await RequestRestGetAsync("/session/start/");
             PrintMessage(response, $"Sessão {sessionId} Conectado");
             tbSessionId.Enabled = false;
-            ShowQRCodeAsync(response);
+            await ShowQRCodeAsync(response);
 
         }
 
@@ -151,28 +155,36 @@ namespace ListaDeTransmissaoWhatsApi
         {
             var options = new RestClientOptions(host)
             {
-                MaxTimeout = -1,
+                MaxTimeout = 10000,
 
             };
             var client = new RestClient(options);
-            var request = new RestRequest(caminhoSession + sessionId + optional, Method.Get);
+            var request = new RestRequest(caminhoSession + sessionId + optional, Method.Get)
+            {
+                Timeout = 5000 // Tempo limite de 5 segundos (5000 milissegundos)
+            };
             request.AddHeader(keyName, keyValue);
             request.AddHeader("Content-Type", contentType);
             return await client.ExecuteAsync(request);
         }
 
-        private async Task PostMessageWhatsapp(string ItensMarcados, string host)
+        private async Task PostMessageWhatsapp(string ItensMarcados, string host, int indexLinha)
         {
+            var usuarioTarget = DadosDoEnvioUsuario(ItensMarcados);
+
             var options = new RestClientOptions(host)
             {
-                MaxTimeout = -1,
+                MaxTimeout = 30000,
             };
             var client = new RestClient(options);
-            var request = new RestRequest($"/client/sendMessage/{sessionId}", Method.Post);
+            var request = new RestRequest($"/client/sendMessage/{sessionId}", Method.Post)
+            {
+                Timeout = 5000 // Tempo limite de 5 segundos (5000 milissegundos)
+            };
             request.AddHeader(keyName, keyValue);
             request.AddHeader("Content-Type", "application/json");
 
-            var usuarioTarget = DadosDoEnvioUsuario(ItensMarcados);
+
 
             string ReplaceDeVariaveisMsg = tbCampoMessage.Text.Replace("@PrimeiroNomeContato@", usuarioTarget.PrimeiroNome.ToString()).Replace("@NomeCompletoDoContato@", usuarioTarget.NomeCompleto.ToString()).Replace("@NumeroDoContato@", usuarioTarget.Numero.ToString());
 
@@ -191,6 +203,62 @@ namespace ListaDeTransmissaoWhatsApi
             request.AddStringBody(body, DataFormat.Json);
             RestResponse response = await client.ExecuteAsync(request);
             labelResponse.Text = response.ResponseStatus.ToString();
+
+            try
+            {
+                if (!listBox1.Items[indexLinha].ToString().Contains(usuarioTarget.PrimeiroNome))
+                {
+                    AcrescentarStringEmLinhaEspecifica(listBox1, $"{usuarioTarget.PrimeiroNome} >> Msg: {response.StatusDescription}", indexLinha);
+                }
+                else
+                {
+                    AcrescentarStringEmLinhaEspecifica(listBox1, $" >> Msg: {response.StatusDescription}", indexLinha);
+                }
+            }
+            catch
+            {
+                AcrescentarStringEmLinhaEspecifica(listBox1, $"{usuarioTarget.PrimeiroNome} >> Msg: {response.StatusDescription}", indexLinha);
+            }
+
+        }
+
+        private async Task PostMessageWhatsappMedia(string ItensMarcados, string base64Image, byte[] imageBytes, string imagePath, int indexLinha)
+        {
+            var usuarioTarget = DadosDoEnvioUsuario(ItensMarcados);
+            var body = new
+            {
+                chatId = usuarioTarget.Numero,
+                contentType = "MessageMedia",
+                content = new
+                {
+                    mimetype = "image/jpeg",
+                    data = base64Image,
+                    filename = Path.GetFileName(imagePath)
+                }
+            };
+
+            // Configuração do RestClient e RestRequest
+            var options = new RestClientOptions(host)
+            {
+                MaxTimeout = 30000 // Define o tempo máximo de espera para estabelecer uma conexão como 30 segundos
+            };
+
+            var client = new RestClient(options);
+            var request = new RestRequest($"/client/sendMessage/{sessionId}", Method.Post)
+            {
+                Timeout = 5000 // Tempo limite de 5 segundos (5000 milissegundos)
+            };
+
+            request.AddHeader(keyName, keyValue);
+            request.AddHeader("Content-Type", "application/json");
+            request.AddJsonBody(body);
+
+            // Executa a solicitação assincronamente
+            RestResponse response = await client.ExecuteAsync(request);
+
+            // Exibe o resultado da solicitação na saída do console ou em uma MessageBox
+            labelResponse.Text = response.ResponseStatus.ToString();
+            AcrescentarStringEmLinhaEspecifica(listBox1, $"{usuarioTarget.PrimeiroNome} >> Media: {response.StatusDescription}", indexLinha);
 
         }
 
@@ -296,8 +364,7 @@ namespace ListaDeTransmissaoWhatsApi
             {
                 MessageBox.Show($"Campos Obrigatórios não Preenchidos", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-
-        } //Atenção aqui, falta campo obrigatórios
+        }
 
         static string FormatarNumeroWhatsApp(string telefone)
         {
@@ -313,23 +380,57 @@ namespace ListaDeTransmissaoWhatsApi
             return "55" + numeroLimpo + "@c.us";
         }
 
-        private void cbEnviarMensagem_Click(object sender, EventArgs e)
+        private async void cbEnviarMensagem_Click(object sender, EventArgs e)
         {
             Processando();
-            string itensMarcados = "Mensagens enviada para:\n";
+            labelProcessandoMsg.Visible = true;
 
-            foreach (var item in clbContatos.CheckedItems)
+            listBox1.Items.Clear();
+            int numeroDeMensagens = 0;
+            if (imagemEmAnexo.Base64Image != null || tbCampoMessage.Text != "")
             {
-                itensMarcados += item.ToString() + "\n";
-                PostMessageWhatsapp(item.ToString(), host);
 
+                if (imagemEmAnexo.Base64Image != null)
+                {
+                    int indexLinha = 0;
+                    foreach (var item in clbContatos.CheckedItems)
+                    {
+
+                        var usuarioTarget = DadosDoEnvioUsuario(item.ToString());
+
+                        await PostMessageWhatsappMedia(item.ToString(), imagemEmAnexo.Base64Image, imagemEmAnexo.ImageBytes, imagemEmAnexo.ImagePath, indexLinha);
+
+                        numeroDeMensagens++;
+                        indexLinha++;
+                    }
+                }
+
+
+                if (tbCampoMessage.Text != "")
+                {
+                    if (numeroDeMensagens != 0)
+                    {
+                        numeroDeMensagens = 0;
+                    }
+                    int indexLinha = 0;
+                    foreach (var item in clbContatos.CheckedItems)
+                    {
+
+
+
+
+                        await PostMessageWhatsapp(item.ToString(), host, indexLinha);
+                        numeroDeMensagens++;
+                        indexLinha++;
+                    }
+                }
+                labelProcessandoMsg.Visible = false;
+                MessageBox.Show(numeroDeMensagens + " Mensagens Enviadas");
             }
-            MessageBox.Show(itensMarcados);
-
-
-
-
-
+            else
+            {
+                MessageBox.Show("Não há mensagem a ser enviada");
+            }
         }
 
         private DadosDoUsuario DadosDoEnvioUsuario(string ItenMarcados)
@@ -510,7 +611,8 @@ namespace ListaDeTransmissaoWhatsApi
             {
                 foreach (var item in clbContatos.CheckedItems)
                 {
-                    writer.WriteLine(item.ToString());
+                    writer.WriteLine(Criptografias.Criptografar(item.ToString())); // Criptografar aqui
+
                 }
             }
             PreencherCheckListBoxComArquivos();
@@ -547,9 +649,10 @@ namespace ListaDeTransmissaoWhatsApi
 
         private void cbImportContatosDeGrupo_Click(object sender, EventArgs e)
         {
-
+            int verificaContatoDuplo = 0;
             foreach (string nomeArquivo in clbGrupoDeContado.CheckedItems)
             {
+
                 string caminhoArquivo = Path.Combine(Application.StartupPath, "Grupos", nomeArquivo + ".txt");
 
                 if (File.Exists(caminhoArquivo))
@@ -557,13 +660,28 @@ namespace ListaDeTransmissaoWhatsApi
                     string[] linhas = File.ReadAllLines(caminhoArquivo);
                     foreach (string linha in linhas)
                     {
-                        clbContatos.Items.Add(linha, true);
+                        string contatoDescriptografado = Criptografias.Descriptografar(linha);
+                        string contatoNumeroDescriptografado = Regex.Replace(contatoDescriptografado, @"[^\d]", "").Substring(2); // Remove caracteres não numéricos e os dois primeiros dígitos
+
+                        if (!clbContatos.Items.Cast<string>().Any(item => item.Contains(contatoNumeroDescriptografado))) // Verifica se algum item da lista contém o número de telefone
+                        {
+                            clbContatos.Items.Add(contatoDescriptografado, true); // Adiciona a linha completa à lista
+                        }
+                        else
+                        {
+                            verificaContatoDuplo++;
+                            clbContatos.Items.Add(contatoDescriptografado, false); // Adiciona a linha completa à lista mas não marca
+                        }
                     }
                 }
                 else
                 {
                     MessageBox.Show($"Arquivo '{nomeArquivo}' não encontrado.", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
+            }
+            if (verificaContatoDuplo > 0)
+            {
+                MessageBox.Show($"Há {verificaContatoDuplo} contatos já existentes adicionados sem marcação");
             }
         }
 
@@ -603,7 +721,109 @@ namespace ListaDeTransmissaoWhatsApi
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             Properties.Settings.Default.sessao = tbSessionId.Text;
+            Properties.Settings.Default.apiKey = tbApiKey.Text;
             Properties.Settings.Default.Save();
+        }
+
+        private async void cbAddImagem_Click(object sender, EventArgs e)
+        {
+            DadosImagemAnexo ImagemEmAnexo = AnexarImagemMedia();
+            if (ImagemEmAnexo.Base64Image != null)
+            {
+                LabelCampoMensagemUp.Text = "Mensagem com Anexo:   >>>   " + imagemEmAnexo.NameFile;
+                pbAnexado.Visible = true;
+            }
+            else
+            {
+                LabelCampoMensagemUp.Text = "Mensagem:";
+                pbAnexado.Visible = false;
+            }
+        }
+
+        private DadosImagemAnexo AnexarImagemMedia()
+        {
+            // Abre o diálogo para selecionar o arquivo de imagem
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "Arquivos de Imagem|*.jpg;*.jpeg;*.png;*.gif";
+                openFileDialog.Title = "Selecione uma imagem";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    imagemEmAnexo.ImagePath = openFileDialog.FileName;
+
+                    // Lê os dados do arquivo da imagem
+                    imagemEmAnexo.ImageBytes = File.ReadAllBytes(imagemEmAnexo.ImagePath);
+                    imagemEmAnexo.Base64Image = Convert.ToBase64String(imagemEmAnexo.ImageBytes);
+                    imagemEmAnexo.NameFile = openFileDialog.SafeFileName.ToString();
+                }
+
+            }
+
+            return imagemEmAnexo;
+        }
+
+        private void AcrescentarStringEmLinhaEspecifica(ListBox listBox, string novaString, int indexLinha)
+        {
+            if (indexLinha >= 0 && indexLinha <= listBox.Items.Count)
+            {
+                if (listBox.InvokeRequired)
+                {
+                    listBox.BeginInvoke((MethodInvoker)(() =>
+                    {
+                        labelProcessandoMsg.Visible = true;
+                        if (indexLinha == listBox.Items.Count || string.IsNullOrEmpty(listBox.Items[indexLinha]?.ToString()))
+                        {
+                            // Se o índice da linha especificada for igual ao número total de itens
+                            // ou se a linha estiver vazia, acrescenta a nova string como um novo item na ListBox
+                            listBox.Items.Insert(indexLinha, novaString);
+                        }
+                        else
+                        {
+                            // Recupera o conteúdo da linha especificada
+                            string linhaAtual = listBox.Items[indexLinha].ToString();
+
+                            // Acrescenta a nova string na frente do conteúdo existente
+                            linhaAtual = linhaAtual + " " + novaString;
+
+                            // Atualiza a linha na ListBox
+                            listBox.Items[indexLinha] = linhaAtual;
+                        }
+                    }));
+                }
+                else
+                {
+                    labelProcessandoMsg.Visible = true;
+                    if (indexLinha == listBox.Items.Count || string.IsNullOrEmpty(listBox.Items[indexLinha]?.ToString()))
+                    {
+                        // Se o índice da linha especificada for igual ao número total de itens
+                        // ou se a linha estiver vazia, acrescenta a nova string como um novo item na ListBox
+                        listBox.Items.Insert(indexLinha, novaString);
+                    }
+                    else
+                    {
+                        // Recupera o conteúdo da linha especificada
+                        string linhaAtual = listBox.Items[indexLinha].ToString();
+
+                        // Acrescenta a nova string na frente do conteúdo existente
+                        linhaAtual = linhaAtual + " " + novaString;
+
+                        // Atualiza a linha na ListBox
+                        listBox.Items[indexLinha] = linhaAtual;
+                    }
+                }
+            }
+            else
+            {
+                // Exibe uma mensagem de erro se o índice da linha especificada for inválido
+                MessageBox.Show("Índice de linha especificado é inválido.");
+            }
+        }
+
+        private void tbApiKey_TextChanged(object sender, EventArgs e)
+        {
+            keyValue = tbApiKey.Text;
         }
     }
 }
+

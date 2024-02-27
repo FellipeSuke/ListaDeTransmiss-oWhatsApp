@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             cbIniciarsessao = new Button();
             tbCampoMessage = new TextBox();
             cbEncerraSessao = new Button();
@@ -56,7 +57,15 @@
             cbExcluirGrupoSelect = new Button();
             cbImportContatosDeGrupo = new Button();
             label3 = new Label();
+            cbAddImagem = new Button();
+            LabelCampoMensagemUp = new Label();
+            listBox1 = new ListBox();
+            labelProcessandoMsg = new Label();
+            label4 = new Label();
+            tbApiKey = new TextBox();
+            pbAnexado = new PictureBox();
             ((System.ComponentModel.ISupportInitialize)pbQrCode).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pbAnexado).BeginInit();
             SuspendLayout();
             // 
             // cbIniciarsessao
@@ -78,7 +87,7 @@
             tbCampoMessage.Multiline = true;
             tbCampoMessage.Name = "tbCampoMessage";
             tbCampoMessage.ScrollBars = ScrollBars.Vertical;
-            tbCampoMessage.Size = new Size(536, 144);
+            tbCampoMessage.Size = new Size(583, 144);
             tbCampoMessage.TabIndex = 16;
             // 
             // cbEncerraSessao
@@ -93,6 +102,7 @@
             // 
             // tbSessionId
             // 
+            tbSessionId.BackColor = SystemColors.Info;
             tbSessionId.CharacterCasing = CharacterCasing.Lower;
             tbSessionId.Location = new Point(97, 9);
             tbSessionId.MaxLength = 14;
@@ -108,9 +118,9 @@
             label1.AutoSize = true;
             label1.Location = new Point(23, 12);
             label1.Name = "label1";
-            label1.Size = new Size(68, 15);
+            label1.Size = new Size(71, 15);
             label1.TabIndex = 4;
-            label1.Text = "Nº Telefone";
+            label1.Text = "Nº Telefone:";
             // 
             // cbStats
             // 
@@ -124,7 +134,7 @@
             // 
             // pbQrCode
             // 
-            pbQrCode.Location = new Point(177, 42);
+            pbQrCode.Location = new Point(144, 49);
             pbQrCode.Name = "pbQrCode";
             pbQrCode.Size = new Size(180, 180);
             pbQrCode.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -136,7 +146,7 @@
             // 
             labelResponse.AutoSize = true;
             labelResponse.BackColor = SystemColors.ActiveCaption;
-            labelResponse.Location = new Point(525, 49);
+            labelResponse.Location = new Point(484, 42);
             labelResponse.Name = "labelResponse";
             labelResponse.Size = new Size(12, 15);
             labelResponse.TabIndex = 7;
@@ -144,7 +154,7 @@
             // 
             // cbRefreshQrCode
             // 
-            cbRefreshQrCode.Location = new Point(363, 107);
+            cbRefreshQrCode.Location = new Point(330, 49);
             cbRefreshQrCode.Name = "cbRefreshQrCode";
             cbRefreshQrCode.Size = new Size(88, 27);
             cbRefreshQrCode.TabIndex = 4;
@@ -182,9 +192,9 @@
             // 
             // cbAddContato
             // 
-            cbAddContato.Location = new Point(260, 284);
+            cbAddContato.Location = new Point(30, 438);
             cbAddContato.Name = "cbAddContato";
-            cbAddContato.Size = new Size(85, 23);
+            cbAddContato.Size = new Size(66, 23);
             cbAddContato.TabIndex = 6;
             cbAddContato.Text = "Adicionar";
             cbAddContato.UseVisualStyleBackColor = true;
@@ -208,7 +218,7 @@
             // 
             // cbEnviarMensagem
             // 
-            cbEnviarMensagem.Location = new Point(460, 648);
+            cbEnviarMensagem.Location = new Point(525, 649);
             cbEnviarMensagem.Name = "cbEnviarMensagem";
             cbEnviarMensagem.Size = new Size(88, 27);
             cbEnviarMensagem.TabIndex = 17;
@@ -239,7 +249,7 @@
             // 
             // cbPrimeiroNome
             // 
-            cbPrimeiroNome.Location = new Point(573, 498);
+            cbPrimeiroNome.Location = new Point(637, 499);
             cbPrimeiroNome.Name = "cbPrimeiroNome";
             cbPrimeiroNome.Size = new Size(87, 40);
             cbPrimeiroNome.TabIndex = 18;
@@ -249,7 +259,7 @@
             // 
             // cbNomeCompleto
             // 
-            cbNomeCompleto.Location = new Point(573, 544);
+            cbNomeCompleto.Location = new Point(637, 545);
             cbNomeCompleto.Name = "cbNomeCompleto";
             cbNomeCompleto.Size = new Size(87, 40);
             cbNomeCompleto.TabIndex = 19;
@@ -259,9 +269,9 @@
             // 
             // cbSelectAll
             // 
-            cbSelectAll.Location = new Point(260, 313);
+            cbSelectAll.Location = new Point(102, 438);
             cbSelectAll.Name = "cbSelectAll";
-            cbSelectAll.Size = new Size(85, 23);
+            cbSelectAll.Size = new Size(46, 23);
             cbSelectAll.TabIndex = 8;
             cbSelectAll.Text = "Todos";
             cbSelectAll.UseVisualStyleBackColor = true;
@@ -270,9 +280,9 @@
             // cbExcluir
             // 
             cbExcluir.BackColor = Color.LightCoral;
-            cbExcluir.Location = new Point(260, 371);
+            cbExcluir.Location = new Point(154, 438);
             cbExcluir.Name = "cbExcluir";
-            cbExcluir.Size = new Size(85, 23);
+            cbExcluir.Size = new Size(53, 23);
             cbExcluir.TabIndex = 9;
             cbExcluir.Text = "Excluir";
             cbExcluir.UseVisualStyleBackColor = false;
@@ -281,15 +291,15 @@
             // clbGrupoDeContado
             // 
             clbGrupoDeContado.FormattingEnabled = true;
-            clbGrupoDeContado.Location = new Point(431, 215);
+            clbGrupoDeContado.Location = new Point(615, 99);
             clbGrupoDeContado.Name = "clbGrupoDeContado";
             clbGrupoDeContado.ScrollAlwaysVisible = true;
-            clbGrupoDeContado.Size = new Size(154, 238);
+            clbGrupoDeContado.Size = new Size(156, 184);
             clbGrupoDeContado.TabIndex = 14;
             // 
             // cbSalvarGrupo
             // 
-            cbSalvarGrupo.Location = new Point(260, 431);
+            cbSalvarGrupo.Location = new Point(397, 430);
             cbSalvarGrupo.Name = "cbSalvarGrupo";
             cbSalvarGrupo.Size = new Size(99, 39);
             cbSalvarGrupo.TabIndex = 11;
@@ -299,7 +309,7 @@
             // 
             // tbNomeDoArquivoDeGrupo
             // 
-            tbNomeDoArquivoDeGrupo.Location = new Point(144, 440);
+            tbNomeDoArquivoDeGrupo.Location = new Point(281, 439);
             tbNomeDoArquivoDeGrupo.Name = "tbNomeDoArquivoDeGrupo";
             tbNomeDoArquivoDeGrupo.Size = new Size(100, 23);
             tbNomeDoArquivoDeGrupo.TabIndex = 10;
@@ -307,7 +317,7 @@
             // cbExcluirGrupoSelect
             // 
             cbExcluirGrupoSelect.BackColor = Color.LightCoral;
-            cbExcluirGrupoSelect.Location = new Point(591, 402);
+            cbExcluirGrupoSelect.Location = new Point(637, 346);
             cbExcluirGrupoSelect.Name = "cbExcluirGrupoSelect";
             cbExcluirGrupoSelect.Size = new Size(106, 51);
             cbExcluirGrupoSelect.TabIndex = 15;
@@ -317,7 +327,7 @@
             // 
             // cbImportContatosDeGrupo
             // 
-            cbImportContatosDeGrupo.Location = new Point(591, 343);
+            cbImportContatosDeGrupo.Location = new Point(637, 289);
             cbImportContatosDeGrupo.Name = "cbImportContatosDeGrupo";
             cbImportContatosDeGrupo.Size = new Size(106, 51);
             cbImportContatosDeGrupo.TabIndex = 13;
@@ -328,17 +338,96 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(463, 197);
+            label3.Location = new Point(676, 81);
             label3.Name = "label3";
             label3.Size = new Size(81, 15);
             label3.TabIndex = 50;
             label3.Text = "Grupos Salvos";
             // 
+            // cbAddImagem
+            // 
+            cbAddImagem.Location = new Point(637, 591);
+            cbAddImagem.Name = "cbAddImagem";
+            cbAddImagem.Size = new Size(87, 40);
+            cbAddImagem.TabIndex = 51;
+            cbAddImagem.Text = "Adicionar Imagem";
+            cbAddImagem.UseVisualStyleBackColor = true;
+            cbAddImagem.Click += cbAddImagem_Click;
+            // 
+            // LabelCampoMensagemUp
+            // 
+            LabelCampoMensagemUp.AutoSize = true;
+            LabelCampoMensagemUp.Location = new Point(30, 481);
+            LabelCampoMensagemUp.Name = "LabelCampoMensagemUp";
+            LabelCampoMensagemUp.Size = new Size(66, 15);
+            LabelCampoMensagemUp.TabIndex = 52;
+            LabelCampoMensagemUp.Text = "Mensagem";
+            // 
+            // listBox1
+            // 
+            listBox1.BackColor = SystemColors.Control;
+            listBox1.BorderStyle = BorderStyle.None;
+            listBox1.FormattingEnabled = true;
+            listBox1.ItemHeight = 15;
+            listBox1.Location = new Point(353, 99);
+            listBox1.MultiColumn = true;
+            listBox1.Name = "listBox1";
+            listBox1.Size = new Size(221, 285);
+            listBox1.TabIndex = 53;
+            // 
+            // labelProcessandoMsg
+            // 
+            labelProcessandoMsg.AutoSize = true;
+            labelProcessandoMsg.BackColor = Color.YellowGreen;
+            labelProcessandoMsg.Location = new Point(410, 81);
+            labelProcessandoMsg.Name = "labelProcessandoMsg";
+            labelProcessandoMsg.Size = new Size(119, 15);
+            labelProcessandoMsg.TabIndex = 54;
+            labelProcessandoMsg.Text = "Enviando Mensagens";
+            labelProcessandoMsg.Visible = false;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Location = new Point(215, 12);
+            label4.Name = "label4";
+            label4.Size = new Size(42, 15);
+            label4.TabIndex = 56;
+            label4.Text = "Senha:";
+            // 
+            // tbApiKey
+            // 
+            tbApiKey.BackColor = SystemColors.Info;
+            tbApiKey.Location = new Point(259, 8);
+            tbApiKey.Name = "tbApiKey";
+            tbApiKey.PasswordChar = '*';
+            tbApiKey.Size = new Size(100, 23);
+            tbApiKey.TabIndex = 57;
+            tbApiKey.TextChanged += tbApiKey_TextChanged;
+            // 
+            // pbAnexado
+            // 
+            pbAnexado.Image = (Image)resources.GetObject("pbAnexado.Image");
+            pbAnexado.Location = new Point(471, 646);
+            pbAnexado.Name = "pbAnexado";
+            pbAnexado.Size = new Size(48, 30);
+            pbAnexado.SizeMode = PictureBoxSizeMode.StretchImage;
+            pbAnexado.TabIndex = 58;
+            pbAnexado.TabStop = false;
+            pbAnexado.Visible = false;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(717, 697);
+            ClientSize = new Size(797, 697);
+            Controls.Add(pbAnexado);
+            Controls.Add(tbApiKey);
+            Controls.Add(label4);
+            Controls.Add(labelProcessandoMsg);
+            Controls.Add(listBox1);
+            Controls.Add(LabelCampoMensagemUp);
+            Controls.Add(cbAddImagem);
             Controls.Add(label3);
             Controls.Add(cbImportContatosDeGrupo);
             Controls.Add(cbExcluirGrupoSelect);
@@ -367,10 +456,12 @@
             Controls.Add(cbEncerraSessao);
             Controls.Add(tbCampoMessage);
             Controls.Add(cbIniciarsessao);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "Form1";
             Text = "Lista de Transmissão WhatsApp";
             FormClosing += Form1_FormClosing;
             ((System.ComponentModel.ISupportInitialize)pbQrCode).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pbAnexado).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -405,5 +496,12 @@
         private Button cbExcluirGrupoSelect;
         private Button cbImportContatosDeGrupo;
         private Label label3;
+        private Button cbAddImagem;
+        private Label LabelCampoMensagemUp;
+        private ListBox listBox1;
+        private Label labelProcessandoMsg;
+        private Label label4;
+        private TextBox tbApiKey;
+        private PictureBox pbAnexado;
     }
 }
