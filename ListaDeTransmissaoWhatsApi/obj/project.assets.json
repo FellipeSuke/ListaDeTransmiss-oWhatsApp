@@ -280,19 +280,24 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\DELL\\.nuget\\packages\\": {}
+    "C:\\Users\\felli\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Dev\\Projeto\\Atualizado\\VS\\ListaDeTransmissaoWhatsApi\\ListaDeTransmissaoWhatsApi\\ListaDeTransmissaoWhatsApi.csproj",
+      "projectUniqueName": "C:\\Users\\felli\\OneDrive\\Documentos\\Git\\ListaDeTransmiss-oWhatsApp\\ListaDeTransmissaoWhatsApi\\ListaDeTransmissaoWhatsApi.csproj",
       "projectName": "ListaDeTransmissaoWhatsApi",
-      "projectPath": "C:\\Dev\\Projeto\\Atualizado\\VS\\ListaDeTransmissaoWhatsApi\\ListaDeTransmissaoWhatsApi\\ListaDeTransmissaoWhatsApi.csproj",
-      "packagesPath": "C:\\Users\\DELL\\.nuget\\packages\\",
-      "outputPath": "C:\\Dev\\Projeto\\Atualizado\\VS\\ListaDeTransmissaoWhatsApi\\ListaDeTransmissaoWhatsApi\\obj\\",
+      "projectPath": "C:\\Users\\felli\\OneDrive\\Documentos\\Git\\ListaDeTransmiss-oWhatsApp\\ListaDeTransmissaoWhatsApi\\ListaDeTransmissaoWhatsApi.csproj",
+      "packagesPath": "C:\\Users\\felli\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\felli\\OneDrive\\Documentos\\Git\\ListaDeTransmiss-oWhatsApp\\ListaDeTransmissaoWhatsApi\\obj\\",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
       "configFilePaths": [
-        "C:\\Users\\DELL\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\felli\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -300,6 +305,7 @@
       ],
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "C:\\Program Files\\dotnet\\library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -312,6 +318,11 @@
         "warnAsError": [
           "NU1605"
         ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
       }
     },
     "frameworks": {
@@ -338,6 +349,24 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[6.0.27, 6.0.27]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[6.0.27, 6.0.27]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[6.0.27, 6.0.27]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[6.0.27, 6.0.27]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.NETCore.App": {
             "privateAssets": "all"
@@ -346,7 +375,7 @@
             "privateAssets": "none"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.401\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.200\\RuntimeIdentifierGraph.json"
       }
     }
   }

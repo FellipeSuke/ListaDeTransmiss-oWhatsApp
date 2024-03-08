@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ListaDeTransmissaoWhatsApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+beced1d5f869ceffb29c631928d91e46abcf77ad")]
 [assembly: System.Reflection.AssemblyProductAttribute("ListaDeTransmissaoWhatsApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ListaDeTransmissaoWhatsApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
